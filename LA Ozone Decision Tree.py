@@ -8,13 +8,14 @@ Created on Fri Mar 15 23:17:12 2019
 import numpy as np
 import pandas as pd
 from scipy.io import loadmat
+from sklearn import tree
 
 #%% Import data
 filename = 'LAozone.data.csv'
 df = pd.read_csv(filename)
 
 #%% Construct data matrices
-raw_data = df.get_values() 
+raw_data = df.get_values()
 y_data = raw_data[:, -1]
 x_data = raw_data[:, :-2]
 cols = range(0, x_data[0].size) 
@@ -38,16 +39,19 @@ M = len(attributeLabels)
 C = len(classNames)
 
 # Remove outliers
-outlier_mask = (X[:,2]>15) | (X[:,7]>10) | (X[:,10]>200)
+outlier_mask = (X[:,2]>15)
 valid_mask = np.logical_not(outlier_mask)
 X = X[valid_mask,:]
 y = y[valid_mask]
 
-# Drop Vandenberg Height
+# Drop Vandenberg Height and doy
 np.delete(X,1,1)
-attributeLabels=np.delete(attributeLabels,1,1)
+np.delete(X,-1,1)
+attributeLabels = attributeLabels[0:11]
 
 N, M=X.shape
 
-
+# Fit regression tree classifier, Gini split criterion, pruning enabled
+dtc = tree.DecisionTreeClassifier(criterion='gini', min_samples_split=100)
+dtc = dtc.fit(X,y)
 
