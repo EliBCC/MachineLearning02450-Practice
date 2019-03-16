@@ -9,6 +9,12 @@ import numpy as np
 import pandas as pd
 from scipy.io import loadmat
 from sklearn import tree
+import random
+import graphviz
+
+# Percent of data used for training
+# K must be <= number of rows in X
+K=10
 
 #%% Import data
 filename = 'LAozone.data.csv'
@@ -44,16 +50,40 @@ valid_mask = np.logical_not(outlier_mask)
 X = X[valid_mask,:]
 y = y[valid_mask]
 
-# Drop Vandenberg Height and doy
-np.delete(X,1,1)
-np.delete(X,-1,1)
-attributeLabels = attributeLabels[0:11]
+# Drop Vandenberg Height
+X=np.delete(X,1,1)
+attributeLabels = np.delete(attributeLabels,1)
 
-N, M=X.shape
+
+# Create training and test sets
+X_train=X
+y_train=y
+row_index=random.randint(0,np.size(X_train,0))
+X_test=X_train[row_index]
+y_test=y_train[row_index]
+X_train=np.delete(X_train,row_index,0)
+y_train=np.delete(y_train,row_index,0)
+for i in range(int((np.size(X,0))*K/100)-1):
+    row_index=random.randint(0,np.size(X_train,0)-1)
+    X_test=np.vstack([X_test,X_train[row_index]])
+    X_train=np.delete(X_train,row_index,0)
+    y_test=np.vstack([y_test,y_train[row_index]])
+    y_train=np.delete(y_train,row_index,0)
+
+# Recompute size
+N, M=X_train.shape
 
 # Fit regression tree classifier, Gini split criterion, pruning enabled
 dtc = tree.DecisionTreeClassifier(criterion='gini', min_samples_split=10)
-dtc = dtc.fit(X,y)
+dtc = dtc.fit(X_train,y_train)
+
+# Compute error
+correct=0
+for i in range(np.size(X_test,0)):
+    x_class = int(dtc.predict(X_test[i].reshape(1,-1))[0])
+    correct=correct + (x_class is int(y_test[i]))
+
+print("Accuracy is: "+str(correct/np.size(X_test,0)))
 
 out = tree.export_graphviz(dtc, out_file='LAozoneData.gvz', feature_names=attributeLabels)
 src=graphviz.Source.from_file('LAozoneData.gvz')
