@@ -52,6 +52,9 @@ attributeLabels = attributeLabels[0:11]
 N, M=X.shape
 
 # Fit regression tree classifier, Gini split criterion, pruning enabled
-dtc = tree.DecisionTreeClassifier(criterion='gini', min_samples_split=100)
+dtc = tree.DecisionTreeClassifier(criterion='gini', min_samples_split=10)
 dtc = dtc.fit(X,y)
 
+out = tree.export_graphviz(dtc, out_file='LAozoneData.gvz', feature_names=attributeLabels)
+src=graphviz.Source.from_file('LAozoneData.gvz')
+src.render('../LAozoneData', view=True) 
