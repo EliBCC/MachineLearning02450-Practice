@@ -74,7 +74,7 @@ for i in range(int((np.size(X,0))*K/100)-1):
 N, M=X_train.shape
 
 # Fit regression tree classifier, Gini split criterion, pruning enabled
-dtc = tree.DecisionTreeClassifier(criterion='gini', min_samples_split=10)
+dtc = tree.DecisionTreeClassifier(criterion='gini', min_samples_split=50)
 dtc = dtc.fit(X_train,y_train)
 
 # Compute error
